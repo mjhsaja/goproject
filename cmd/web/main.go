@@ -12,28 +12,20 @@ type application struct {
 }
 
 func main() {
-	addr := flag.String("addr", ":4000", "HTTP network address")
-	flag.Parse()
+    addr := flag.String("addr", ":4000", "HTTP network address")
+    flag.Parse()
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
-	app := &application{
-		logger: logger,
-	}
+    logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	mux := http.NewServeMux()
-	
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+    app := &application{
+        logger: logger,
+    }
 
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /snippet/view/{id}", app.snippetView)
-	mux.HandleFunc("GET /snippet/create", app.snippetCreate)
-	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
-
-	logger.Info("Starting server", "addr", *addr)
-
-	err := http.ListenAndServe(*addr, mux)
-	logger.Error(err.Error())
-	os.Exit(1)
+    logger.Info("starting server", "addr", *addr)
+    
+    // Call the new app.routes() method to get the servemux containing our routes,
+    // and pass that to http.ListenAndServe().
+    err := http.ListenAndServe(*addr, app.routes())
+    logger.Error(err.Error())
+    os.Exit(1)
 }
